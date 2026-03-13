@@ -134,11 +134,9 @@ Recommended: **Vercel**
 
 ## License / ライセンス
 
-All rights reserved. This software is proprietary.
-Commercial licensing available — contact for details.
+MIT License — See [LICENSE](LICENSE) for details.
 
-このソフトウェアのすべての権利は留保されています。
-商用ライセンスについてはお問い合わせください。
+MITライセンス — 詳細は[LICENSE](LICENSE)をご確認ください。
 
 ---
 
