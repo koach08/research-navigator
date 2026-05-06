@@ -4,6 +4,7 @@ import { searchSemanticScholar } from '@/lib/api-clients/semantic-scholar';
 import { searchOpenAlex } from '@/lib/api-clients/openalex';
 import { createServiceClient } from '@/lib/supabase/server';
 import { logActivityServer } from '@/lib/activity-logger-server';
+import { checkAccess } from '@/lib/feature-gate';
 import type { SearchResult } from '@/types/paper';
 
 export async function POST(request: NextRequest) {
@@ -11,6 +12,9 @@ export async function POST(request: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const access = await checkAccess(userId, 'advisor');
+  if (!access.allowed) return access.error!;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -27,7 +31,7 @@ export async function POST(request: NextRequest) {
     const client = new Anthropic({ apiKey });
 
     const analysisMessage = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [
         {
@@ -149,7 +153,7 @@ development_possibilities は2-4個生成してください。この研究がど
     const topPapers = uniquePapers.slice(0, 30);
 
     const scoringMessage = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [
         {

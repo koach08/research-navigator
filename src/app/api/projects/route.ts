@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
+import { checkAccess } from '@/lib/feature-gate';
 
 export async function GET(request: NextRequest) {
   const supabase = createServiceClient();
@@ -42,6 +43,9 @@ export async function POST(request: NextRequest) {
   if (!name) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 });
   }
+
+  const access = await checkAccess(userId, 'project_create');
+  if (!access.allowed) return access.error!;
 
   const { data, error } = await supabase
     .from('projects')

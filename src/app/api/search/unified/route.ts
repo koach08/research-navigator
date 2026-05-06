@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unifiedSearch } from '@/lib/search/unified';
 import { createServiceClient } from '@/lib/supabase/server';
 import { logActivityServer } from '@/lib/activity-logger-server';
+import { checkAccess, trackUsage } from '@/lib/feature-gate';
 import type { UnifiedSearchResult } from '@/types/paper';
 
 export async function GET(request: NextRequest) {
@@ -9,6 +10,10 @@ export async function GET(request: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Feature gate: search usage limit
+  const access = await checkAccess(userId, 'search');
+  if (!access.allowed) return access.error!;
 
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
@@ -49,6 +54,9 @@ export async function GET(request: NextRequest) {
       year_from: yearFrom,
       year_to: yearTo,
     });
+
+    // Track search usage
+    await trackUsage(userId, 'search');
 
     return NextResponse.json({
       data: cachedResults,

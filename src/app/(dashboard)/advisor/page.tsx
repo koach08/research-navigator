@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useLicense } from '@/hooks/use-license';
 import { useProjects } from '@/hooks/use-projects';
 import { formatAuthors, formatNumber } from '@/lib/utils';
 import {
@@ -221,6 +222,17 @@ export default function AdvisorPage() {
   };
 
   const hasInput = text.trim().length > 0 || uploadedText.length > 0;
+  const { isPro, loading: licenseLoading } = useLicense();
+
+  if (!licenseLoading && !isPro) {
+    const { UpgradePrompt } = require('@/components/license/upgrade-prompt');
+    return (
+      <UpgradePrompt
+        feature="AI Research Advisor"
+        description="AIが研究テーマを分析し、関連文献の検索・推薦・研究方向の提案を行います。Pro版でご利用いただけます。"
+      />
+    );
+  }
 
   return (
     <div className="max-w-4xl">

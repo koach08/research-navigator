@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useLicense } from '@/hooks/use-license';
 import { formatAuthors, formatNumber } from '@/lib/utils';
 import {
   ClipboardCheck,
@@ -215,6 +216,17 @@ export default function ReviewPage() {
   };
 
   const hasInput = text.trim().length > 0 || uploadedText.length > 0;
+  const { isPro, loading: licenseLoading } = useLicense();
+
+  if (!licenseLoading && !isPro) {
+    const { UpgradePrompt } = require('@/components/license/upgrade-prompt');
+    return (
+      <UpgradePrompt
+        feature="Paper Review"
+        description="AIが論文の独自性・先行研究との比較・改善点を分析します。Pro版でご利用いただけます。"
+      />
+    );
+  }
 
   return (
     <div className="max-w-4xl">

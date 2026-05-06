@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { searchSemanticScholar } from '@/lib/api-clients/semantic-scholar';
 import { searchOpenAlex } from '@/lib/api-clients/openalex';
 import { logActivityServer } from '@/lib/activity-logger-server';
+import { checkAccess } from '@/lib/feature-gate';
 import type { SearchResult } from '@/types/paper';
 
 export async function POST(request: NextRequest) {
@@ -10,6 +11,9 @@ export async function POST(request: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const access = await checkAccess(userId, 'review');
+  if (!access.allowed) return access.error!;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -26,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Extract key claims, methodology, and generate search queries
     const extractionMessage = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [
         {
@@ -118,7 +122,7 @@ search_queries は5-8個生成してください。この研究の独自性を�
 
     // Step 3: Claude evaluates originality, positioning, strengths, improvements
     const reviewMessage = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [
         {

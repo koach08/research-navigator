@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
+import { checkAccess } from '@/lib/feature-gate';
 
 export async function GET(request: NextRequest) {
   const userId = request.headers.get('x-user-id');
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const access = await checkAccess(userId, 'export');
+  if (!access.allowed) return access.error!;
 
   const supabase = createServiceClient();
 

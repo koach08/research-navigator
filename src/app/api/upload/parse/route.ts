@@ -40,11 +40,14 @@ export async function POST(request: NextRequest) {
     if (ext === 'txt') {
       text = await file.text();
     } else if (ext === 'pdf') {
-      const pdfParse = (await import('pdf-parse')).default;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const pdfData = await pdfParse(buffer);
-      text = pdfData.text;
-      pages = pdfData.numpages;
+      const { PDFParse } = await import('pdf-parse');
+      const arrayBuffer = await file.arrayBuffer();
+      const data = new Uint8Array(arrayBuffer);
+      const parser = new PDFParse({ data });
+      const textResult = await parser.getText();
+      text = textResult.text;
+      pages = textResult.total;
+      await parser.destroy();
     } else if (ext === 'docx') {
       const mammoth = await import('mammoth');
       const buffer = Buffer.from(await file.arrayBuffer());

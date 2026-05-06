@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Key, Mail, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
+import { LicenseForm } from '@/components/license/license-form';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -10,6 +11,12 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl">
       <h2 className="text-xl font-bold text-white mb-6">設定</h2>
+
+      {/* License / Plan */}
+      <section className="mb-8">
+        <h3 className="text-sm font-semibold text-zinc-400 mb-3">プラン / License</h3>
+        <LicenseForm />
+      </section>
 
       {/* Account info */}
       <section className="mb-8">
